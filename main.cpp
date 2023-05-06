@@ -2,7 +2,6 @@
 #include <memory>
 #include <array>
 #include <cmath>
-#include <map>
 
 #define SDL_MAIN_HANDLED
 
@@ -62,30 +61,9 @@ vec2d operator/(vec2d a, double b) {
 double len(vec2d v) {
     return std::sqrt(v[0]*v[0] + v[1]*v[1]);
 }
-class car_c {
-public:
-    vec2d position;
-    vec2d  acceleration
-    vec2d  speed;
-
-    car_c next_state(double dt_ms) {
-        double dt = dt_ms / 1000.0;
-        car_c next = *this;
-        const double C = 0.1;
-        vec2d friction = {0.0,0.0};
-        if (len(velocity) > 0) {
-            friction = velocity*len(velocity)*C;
-        }
-        auto a = acceleration - friction;
-        next.position = position + velocity * dt + (a * dt * dt) / 2;
-        next.velocity = velocity + a * dt;
-        next.acceleration = a;
-    }
-};
 class player_c {
 public:
     double angle;
-    //double speed;
     vec2d position;
     vec2d velocity;
     vec2d acceleration;
@@ -103,109 +81,47 @@ public:
         next.velocity = velocity + a * dt;
         next.acceleration = a;
 
+
+
+
         return next;
     }
 };
-class carBot_c{
+class bot_c {
 public:
-    carBot_c() {
+    double angle;
+    vec2d position;
+    vec2d velocity;
+    vec2d acceleration;
 
-    }
-
-    int positionX;
-    int positionY;
-    int weight=64;
-    int height=64;
-
-    carBot_c(int positionY){
-        this->positionY=positionY;
-        this->positionX = 600;
-    }
-
-    carBot_c increaseSpeed(){
-        carBot_c carbot = *this;
-        carbot.positionX-=1;
-       return carbot;
-    }
-
-
-};
-class street_c{
-public:
-    int numberOfBots;
-    static const int maxNumBots=10;
-    int lastAddedBot;
-    int acceleration;
-    carBot_c *bots = new carBot_c;
-
-    street_c addBot1(int num,street_c street_object){
-        carBot_c bot1(60);
-        street_object.bots[num] = bot1;
-        street_object.numberOfBots++;
-        street_object.lastAddedBot=1;
-        return street_object;
-    }
-    street_c addBot2(int num,street_c street_object){
-        carBot_c bot(120);
-        street_object.bots[num] = bot;
-        street_object.numberOfBots++;
-        street_object.lastAddedBot=2;
-        return street_object;
-    }
-    street_c addBot3(int num,street_c street_object){
-        carBot_c bot(180);
-        street_object.bots[numberOfBots] = bot;
-        street_object.numberOfBots++;
-        street_object.lastAddedBot=3;
-        return street_object;
-    }
-      street_c deletebot(int num,street_c street_object){
-        if(street_object.bots[num].positionX == 10)
-        {
-            if(street_object.lastAddedBot==1) addBot1(num,street_object);
-            if(street_object.lastAddedBot==2) addBot2(num,street_object);
-            if(street_object.lastAddedBot==3) addBot3(num,street_object);
+    player_c next_state(double dt_ms) {
+        double dt = dt_ms / 1000.0;
+        player_c next = *this;
+        const double C = 0.1;
+        vec2d friction = {0.0,0.0};
+        if (len(velocity) > 0) {
+            friction = velocity*len(velocity)*C;
         }
+        auto a = acceleration - friction;
+        next.position = position + velocity * dt + (a * dt * dt) / 2;
+        next.velocity = velocity + a * dt;
+        next.acceleration = a;
+        return next;
     }
-
-
 };
-
-int increaseSpeedOfStreet(const street_c &street) {
-    auto *keyboard_state = SDL_GetKeyboardState(nullptr);
-    int acc = street.acceleration;
-   // if (keyboard_state[SDL_SCANCODE_UP]) acc -= 1;
-   // if (keyboard_state[ SDL_SCANCODE_DOWN]) acc += 1;
-    return acc;
-}
 //to delete
 vec2d angle_to_vector(double angle) {
     return {std::cos(angle), std::sin(angle)};
 }
 
-vec2d changePosition(const car_c &car) {
-    auto *keyboard_state = SDL_GetKeyboardState(nullptr);
-    vec2d forward_vec = angle_to_vector(car.angle);
-    vec2d acceleration = 0;
-    vec2d car_speed = car.speed;
-    if (keyboard_state[SDL_SCANCODE_DOWN]) {
-        acceleration = acceleration + car_speed;
-    }
-    if (keyboard_state[SDL_SCANCODE_UP]) {
-        acceleration = acceleration - car_speed;
-    }
-    return acceleration*200.0;
-}
-
-
 vec2d acceleration_vector_from_keyboard_and_player(const player_c &player) {
     auto *keyboard_state = SDL_GetKeyboardState(nullptr);
     vec2d forward_vec = angle_to_vector(player.angle);
     vec2d acceleration = {0, 0};
-    if (keyboard_state[SDL_SCANCODE_LEFT]) {
+    if (keyboard_state[SDL_SCANCODE_DOWN]) {
         acceleration = acceleration + forward_vec;
     }
-    if (keyboard_state[SDL_SCANCODE_RIGHT]) {
+    if (keyboard_state[SDL_SCANCODE_UP]) {
         acceleration = acceleration - forward_vec;
     }
     return acceleration*200.0;
@@ -214,27 +130,21 @@ vec2d acceleration_vector_from_keyboard_and_player(const player_c &player) {
 double angle_from_keyboard_and_player(const player_c &player) {
     auto *keyboard_state = SDL_GetKeyboardState(nullptr);
     double angle = player.angle;
-    if (keyboard_state[SDL_SCANCODE_LEFT]) angle -= angle;
-    if (keyboard_state[SDL_SCANCODE_RIGHT]) angle += angle;
+    if (keyboard_state[SDL_SCANCODE_LEFT])  angle = M_PI/2;
+    if (keyboard_state[SDL_SCANCODE_RIGHT]) angle = M_PI;
     return angle;
 }
 
 void play_the_game(SDL_Renderer *renderer) {
     auto street_texture = load_texture(renderer, "street.bmp");
     auto clouds_texture = load_texture(renderer, "clouds.bmp");
-    //auto player_texture = load_texture(renderer, "car.bmp");
-    auto car_texture = load_texture(renderer, "car.bmp");
-    auto bot_texture = load_texture(renderer, "bot.bmp");
+    auto player_texture = load_texture(renderer, "car.bmp");
 
-    //SDL_Rect player_rect = get_texture_rect(player_texture);
+    SDL_Rect player_rect = get_texture_rect(player_texture);
     SDL_Rect street_rect = get_texture_rect(street_texture);
-    SDL_Rect car_rect = get_texture_rect(street_texture);
     SDL_Rect clouds_rect = get_texture_rect(clouds_texture);
-    SDL_Rect bot_rect = get_texture_rect(bot_texture);
 
-    //player_c player = {0, {320.0, 200.0}};
-    street_c streetOfbot;
-
+    player_c player = {M_PI/2, {120.0, 200.0}};
     int gaming = true;
     auto prev_tick = SDL_GetTicks();
     while (gaming) {
@@ -251,38 +161,28 @@ void play_the_game(SDL_Renderer *renderer) {
             }
         }
 
-        /*player.acceleration = acceleration_vector_from_keyboard_and_player(player);
-        player.angle = angle_from_keyboard_and_player(player);
+        player.acceleration = acceleration_vector_from_keyboard_and_player(player);
+        //player.angle = angle_from_keyboard_and_player(player);
         player = player.next_state(TICK_TIME);
-*/
+
 // Solid background Color
 //        SDL_SetRenderDrawColor(renderer, 1, 40, 128, 255);
 //        SDL_RenderClear(renderer);
 
 
-
-
         {
-            auto rect = car_rect;
+            auto rect = player_rect;
 
-
-            rect.x = car. - rect.w / 2;
+            rect.x = player.position[0] - rect.w / 2;
             rect.y = player.position[1] - rect.h / 2;
 
+
             SDL_RenderCopy(renderer, street_texture.get(), nullptr, nullptr);
-            SDL_RenderCopy(renderer, car_texture.get(), nullptr, &rect);
-          //  SDL_RenderCopyEx(renderer, player_texture.get(),
-            //                 nullptr, &rect, 180.0 * player.angle / M_PI,
-            //                 nullptr, SDL_FLIP_NONE);
-            //{
-               // streetOfbot.addBot1(0,streetOfbot);
-                //SDL_RenderCopy(renderer, street_texture.get(), nullptr, {rect.x = });
-
-                //miejsce generowania botow SDL_RenderCopy
-
-            //}
-           // clouds_rect = {200,200};
-           // SDL_RenderCopy(renderer, clouds_texture.get(), nullptr, &clouds_rect);
+            SDL_RenderCopyEx(renderer, player_texture.get(),
+                             nullptr, &rect,  player.angle,
+                             nullptr, SDL_FLIP_NONE);
+            clouds_rect = {200,200};
+            SDL_RenderCopy(renderer, clouds_texture.get(), nullptr, &clouds_rect);
         }
         SDL_RenderPresent(renderer);
         int current_tick = SDL_GetTicks();

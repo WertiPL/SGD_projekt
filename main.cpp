@@ -87,6 +87,10 @@ public:
 };
 class carBot_c{
 public:
+    carBot_c() {
+
+    }
+
     int positionX;
     int positionY;
     int weight=64;
@@ -111,7 +115,7 @@ public:
     static const int maxNumBots=10;
     int lastAddedBot;
     int acceleration;
-    carBot_c bots[maxNumBots];
+    carBot_c *bots = new carBot_c;
 
     street_c addBot1(int num,street_c street_object){
         carBot_c bot1(60);
@@ -134,7 +138,7 @@ public:
         street_object.lastAddedBot=3;
         return street_object;
     }
-    street_c deletebot(int num,street_c street_object){
+      street_c deletebot(int num,street_c street_object){
         if(street_object.bots[num].positionX == 10)
         {
             if(street_object.lastAddedBot==1) addBot1(num,street_object);
@@ -183,12 +187,16 @@ void play_the_game(SDL_Renderer *renderer) {
     auto street_texture = load_texture(renderer, "street.bmp");
     auto clouds_texture = load_texture(renderer, "clouds.bmp");
     auto player_texture = load_texture(renderer, "car.bmp");
+    auto bot_texture = load_texture(renderer, "bot.bmp");
 
     SDL_Rect player_rect = get_texture_rect(player_texture);
     SDL_Rect street_rect = get_texture_rect(street_texture);
     SDL_Rect clouds_rect = get_texture_rect(clouds_texture);
+    SDL_Rect bot_rect = get_texture_rect(bot_texture);
 
     player_c player = {0, {320.0, 200.0}};
+    street_c streetOfbot;
+
     int gaming = true;
     auto prev_tick = SDL_GetTicks();
     while (gaming) {
@@ -225,6 +233,13 @@ void play_the_game(SDL_Renderer *renderer) {
             SDL_RenderCopyEx(renderer, player_texture.get(),
                              nullptr, &rect, 180.0 * player.angle / M_PI,
                              nullptr, SDL_FLIP_NONE);
+            //{
+               // streetOfbot.addBot1(0,streetOfbot);
+                //SDL_RenderCopy(renderer, street_texture.get(), nullptr, {rect.x = });
+
+                //miejsce generowania botow SDL_RenderCopy
+
+            //}
             clouds_rect = {200,200};
             SDL_RenderCopy(renderer, clouds_texture.get(), nullptr, &clouds_rect);
         }

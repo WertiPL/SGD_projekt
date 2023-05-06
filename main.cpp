@@ -10,12 +10,16 @@
 const int TICK_TIME = 33;
 
 std::shared_ptr<SDL_Texture> load_texture(SDL_Renderer *renderer, std::string fname) {
-    SDL_Surface *bmp = SDL_LoadBMP(("assets/" + fname).c_str());
+    SDL_Surface *bmp = SDL_LoadBMP(("data/" + fname).c_str());
     if (!bmp) {
-        throw std::invalid_argument("Could not load bmp");
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,"Couldn't create surface from image: %s",SDL_GetError());
+        throw std::invalid_argument(SDL_GetError());
     }
+
     SDL_SetColorKey(bmp, SDL_TRUE, 0x0ff00ff);
+
     SDL_Texture *texture = SDL_CreateTextureFromSurface(renderer, bmp);
+
     if (!texture) {
         throw std::invalid_argument("Could not create texture");
     }
@@ -83,7 +87,7 @@ public:
         return next;
     }
 };
-
+//to delete
 vec2d angle_to_vector(double angle) {
     return {std::cos(angle), std::sin(angle)};
 }
@@ -110,8 +114,14 @@ double angle_from_keyboard_and_player(const player_c &player) {
 }
 
 void play_the_game(SDL_Renderer *renderer) {
-    auto player_texture = load_texture(renderer, "player1.bmp");
+    auto street_texture = load_texture(renderer, "street.bmp");
+    auto clouds_texture = load_texture(renderer, "clouds.bmp");
+    auto player_texture = load_texture(renderer, "car.bmp");
+
     SDL_Rect player_rect = get_texture_rect(player_texture);
+    SDL_Rect street_rect = get_texture_rect(street_texture);
+    SDL_Rect clouds_rect = get_texture_rect(clouds_texture);
+
     player_c player = {0, {320.0, 200.0}};
     int gaming = true;
     auto prev_tick = SDL_GetTicks();
@@ -133,22 +143,27 @@ void play_the_game(SDL_Renderer *renderer) {
         player.angle = angle_from_keyboard_and_player(player);
         player = player.next_state(TICK_TIME);
 
+// Solid background Color
+//        SDL_SetRenderDrawColor(renderer, 1, 40, 128, 255);
+//        SDL_RenderClear(renderer);
 
-        SDL_SetRenderDrawColor(renderer, 1, 40, 128, 255);
-        SDL_RenderClear(renderer);
 
-        //SDL_RenderCopy(renderer, player_texture.get(), nullptr, &player_rect);
         {
             auto rect = player_rect;
 
             rect.x = player.position[0] - rect.w / 2;
             rect.y = player.position[1] - rect.h / 2;
+
+
+            SDL_RenderCopy(renderer, street_texture.get(), nullptr, nullptr);
             SDL_RenderCopyEx(renderer, player_texture.get(),
                              nullptr, &rect, 180.0 * player.angle / M_PI,
                              nullptr, SDL_FLIP_NONE);
+            clouds_rect = {200,200};
+            SDL_RenderCopy(renderer, clouds_texture.get(), nullptr, &clouds_rect);
         }
         SDL_RenderPresent(renderer);
-        auto current_tick = SDL_GetTicks();
+        int current_tick = SDL_GetTicks();
         SDL_Delay(TICK_TIME - (current_tick - prev_tick));
         prev_tick += TICK_TIME;
     }
@@ -158,6 +173,7 @@ int main() {
     SDL_Init(SDL_INIT_EVERYTHING);
     SDL_Window *window;
     SDL_Renderer *renderer;
+
     SDL_CreateWindowAndRenderer(640, 480,
                                 SDL_WINDOW_SHOWN,
                                 &window, &renderer);

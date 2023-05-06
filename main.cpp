@@ -87,6 +87,28 @@ public:
         return next;
     }
 };
+class bot_c {
+public:
+    double angle;
+    vec2d position;
+    vec2d velocity;
+    vec2d acceleration;
+
+    player_c next_state(double dt_ms) {
+        double dt = dt_ms / 1000.0;
+        player_c next = *this;
+        const double C = 0.1;
+        vec2d friction = {0.0,0.0};
+        if (len(velocity) > 0) {
+            friction = velocity*len(velocity)*C;
+        }
+        auto a = acceleration - friction;
+        next.position = position + velocity * dt + (a * dt * dt) / 2;
+        next.velocity = velocity + a * dt;
+        next.acceleration = a;
+        return next;
+    }
+};
 //to delete
 vec2d angle_to_vector(double angle) {
     return {std::cos(angle), std::sin(angle)};
@@ -96,10 +118,10 @@ vec2d acceleration_vector_from_keyboard_and_player(const player_c &player) {
     auto *keyboard_state = SDL_GetKeyboardState(nullptr);
     vec2d forward_vec = angle_to_vector(player.angle);
     vec2d acceleration = {0, 0};
-    if (keyboard_state[SDL_SCANCODE_UP]) {
+    if (keyboard_state[SDL_SCANCODE_DOWN]) {
         acceleration = acceleration + forward_vec;
     }
-    if (keyboard_state[SDL_SCANCODE_DOWN]) {
+    if (keyboard_state[SDL_SCANCODE_UP]) {
         acceleration = acceleration - forward_vec;
     }
     return acceleration*200.0;
@@ -108,8 +130,8 @@ vec2d acceleration_vector_from_keyboard_and_player(const player_c &player) {
 double angle_from_keyboard_and_player(const player_c &player) {
     auto *keyboard_state = SDL_GetKeyboardState(nullptr);
     double angle = player.angle;
-    if (keyboard_state[SDL_SCANCODE_LEFT]) angle = angle - M_PI / 10.0;
-    if (keyboard_state[SDL_SCANCODE_RIGHT]) angle = angle + M_PI / 10.0;
+    if (keyboard_state[SDL_SCANCODE_LEFT])  angle = M_PI/2;
+    if (keyboard_state[SDL_SCANCODE_RIGHT]) angle = M_PI;
     return angle;
 }
 
@@ -122,7 +144,7 @@ void play_the_game(SDL_Renderer *renderer) {
     SDL_Rect street_rect = get_texture_rect(street_texture);
     SDL_Rect clouds_rect = get_texture_rect(clouds_texture);
 
-    player_c player = {0, {320.0, 200.0}};
+    player_c player = {M_PI/2, {120.0, 200.0}};
     int gaming = true;
     auto prev_tick = SDL_GetTicks();
     while (gaming) {
@@ -140,7 +162,7 @@ void play_the_game(SDL_Renderer *renderer) {
         }
 
         player.acceleration = acceleration_vector_from_keyboard_and_player(player);
-        player.angle = angle_from_keyboard_and_player(player);
+        //player.angle = angle_from_keyboard_and_player(player);
         player = player.next_state(TICK_TIME);
 
 // Solid background Color
@@ -157,7 +179,7 @@ void play_the_game(SDL_Renderer *renderer) {
 
             SDL_RenderCopy(renderer, street_texture.get(), nullptr, nullptr);
             SDL_RenderCopyEx(renderer, player_texture.get(),
-                             nullptr, &rect, 180.0 * player.angle / M_PI,
+                             nullptr, &rect,  player.angle,
                              nullptr, SDL_FLIP_NONE);
             clouds_rect = {200,200};
             SDL_RenderCopy(renderer, clouds_texture.get(), nullptr, &clouds_rect);

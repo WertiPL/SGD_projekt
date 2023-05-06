@@ -78,25 +78,29 @@ public:
         }
         auto a = acceleration - friction;
         next.position = position + velocity * dt + (a * dt * dt) / 2;
+        if(next.position[1]<=120)
+        {
+            next.position[1]=120;
+        }
+        else if(next.position[1]>=400)
+        {
+            next.position[1]=400;
+        }
         next.velocity = velocity + a * dt;
         next.acceleration = a;
-
-
-
-
         return next;
     }
 };
-class bot_c {
+class playerTwo_C {
 public:
     double angle;
     vec2d position;
     vec2d velocity;
     vec2d acceleration;
 
-    player_c next_state(double dt_ms) {
+    playerTwo_C next_state(double dt_ms) {
         double dt = dt_ms / 1000.0;
-        player_c next = *this;
+        playerTwo_C next = *this;
         const double C = 0.1;
         vec2d friction = {0.0,0.0};
         if (len(velocity) > 0) {
@@ -124,15 +128,26 @@ vec2d acceleration_vector_from_keyboard_and_player(const player_c &player) {
     if (keyboard_state[SDL_SCANCODE_UP]) {
         acceleration = acceleration - forward_vec;
     }
-    return acceleration*200.0;
-}
 
-double angle_from_keyboard_and_player(const player_c &player) {
+        return acceleration* 200.0;
+    }
+
+vec2d acceleration_vector_from_keyboard_and_player(const playerTwo_C &playerTwo) {
     auto *keyboard_state = SDL_GetKeyboardState(nullptr);
-    double angle = player.angle;
-    if (keyboard_state[SDL_SCANCODE_LEFT])  angle = M_PI/2;
-    if (keyboard_state[SDL_SCANCODE_RIGHT]) angle = M_PI;
-    return angle;
+    vec2d forward_vec = angle_to_vector(playerTwo.angle);
+    vec2d acceleration = {0, 0};
+
+    if (keyboard_state[SDL_SCANCODE_D]) {
+        acceleration = acceleration + forward_vec;
+    }
+    if (keyboard_state[SDL_SCANCODE_A]) {
+        acceleration = acceleration - forward_vec;
+    }
+
+    acceleration * 250.0;
+
+        return acceleration;
+
 }
 
 void play_the_game(SDL_Renderer *renderer) {

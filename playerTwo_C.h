@@ -15,9 +15,9 @@ public:
     vec2d position;
     vec2d velocity;
     vec2d acceleration;
+    bool finished;
     playerTwo_C next_state(double dt_ms);
-
-
+    bool checkstate();
 };
 
 

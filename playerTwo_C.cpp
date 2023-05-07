@@ -15,11 +15,22 @@ playerTwo_C playerTwo_C::next_state(double dt_ms) {
     }
     auto a = acceleration - friction;
     next.position = position + velocity * dt + (a * dt * dt) / 2;
-    if(next.position[0]<=80)
+/*    if(next.position[0]<=80)
     {
         next.position[0]=520;
-    }
+    }*/
     next.velocity = velocity + a * dt;
     next.acceleration = a;
     return next;
+}
+bool playerTwo_C::checkstate() {
+
+    playerTwo_C next = *this;
+
+    if(next.position[0]<=80)
+    {
+        return true;
+    }
+
+    return false;
 }

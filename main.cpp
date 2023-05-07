@@ -89,8 +89,6 @@ void play_the_game(SDL_Renderer *renderer) {
 
     SDL_Rect *two_rect = new SDL_Rect;
 
-    //SDL_Rect two2_rect = get_texture_rect(player2_texture1);
-   // SDL_Rect two3_rect = get_texture_rect(player2_texture1);
 
     player_c player = {M_PI/2, {120.0, 200.0}};
     double playerTwoDirection = M_PI;
@@ -139,17 +137,15 @@ void play_the_game(SDL_Renderer *renderer) {
         auto *keyboard_state = SDL_GetKeyboardState(nullptr);
         if(keyboard_state[SDL_SCANCODE_S])
         {
-            if(countOfbots <= 4)
+            if(countOfbots < 4)
             {
                 //create new car in Game
                 if(lastTypeOfbots == 2)
                 {
                     two_rect[countOfbots] = get_texture_rect(player2_texture1);
                     player2[countOfbots] = {playerTwoDirection,standard_resp[lastTypeOfbots]};
-
                 }
                 else if (lastTypeOfbots == 1) {
-
                     two_rect[countOfbots] = get_texture_rect(player2_texture1);
                     player2[countOfbots] = {playerTwoDirection,standard_resp[lastTypeOfbots]};
 
@@ -169,17 +165,46 @@ void play_the_game(SDL_Renderer *renderer) {
             }
             else
             {
+                for(int i=0;i<countOfbots;i++ )
+                {
+                    if(player2[i].finished == true)
+                    {
+                        if(lastTypeOfbots == 2)
+                        {
+                            two_rect[i] = get_texture_rect(player2_texture1);
+                            player2[i] = {playerTwoDirection,standard_resp[lastTypeOfbots]};
+                        }
+                        else if (lastTypeOfbots == 1) {
+                            two_rect[i] = get_texture_rect(player2_texture1);
+                            player2[i] = {playerTwoDirection,standard_resp[lastTypeOfbots]};
+
+                        }
+                        else if (lastTypeOfbots == 0) {
+                            two_rect[i] = get_texture_rect(player2_texture1);
+                            player2[i] = {playerTwoDirection,standard_resp[lastTypeOfbots]};
+
+                        }
+                        lastTypeOfbots++;
+                        if(lastTypeOfbots==3)
+                        {
+                            lastTypeOfbots=0;
+                        }
+                    }
+                }
+
                 std::cout<<"Maks Botow"<<std::endl;
+
             }
 
         }
+        //changing position of Player 2
         for(int i=0;i<countOfbots;i++)
         {
             player2[i].acceleration = acceleration_vector_from_keyboard_and_player2(player2[i]);
             player2[i]=player2[i].next_state(TICK_TIME);
-        }
 
-       // SDL_Delay
+        }
+        //rendering position of Player 2
         {
 
 
@@ -190,9 +215,17 @@ void play_the_game(SDL_Renderer *renderer) {
 
                 copyTwo_rect[i].x = player2[i].position[0] - copyTwo_rect[i].w / 3;
                 copyTwo_rect[i].y = player2[i].position[1] - copyTwo_rect[i].h / 3;
-            SDL_RenderCopyEx(renderer, player2_texture1.get(),
-                             nullptr, &copyTwo_rect[i], player2[i].angle,
-                             nullptr, SDL_FLIP_NONE);
+                if(!player2[i].checkstate())
+                {
+                    SDL_RenderCopyEx(renderer, player2_texture1.get(),
+                                     nullptr, &copyTwo_rect[i], player2[i].angle,
+                                     nullptr, SDL_FLIP_NONE);
+
+                }else
+                {
+                    player2[i].finished = true;
+                }
+
             }
         }
 

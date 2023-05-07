@@ -11,9 +11,6 @@ set(SDL2MIXER_LIB_DIR C:/LibSDL/VC/SDL2_mix/lib/x64)
 
 include_directories(${SDL2_INCLUDE_DIR} ${SDL2MIXER_INCLUDE_DIR})
 
-
-
-add_executable(${PROJECT_NAME} main.cpp)
-
+add_executable(${PROJECT_NAME} main.cpp player_c.cpp player_c.h vec2d.cpp vec2d.h playerTwo_C.cpp playerTwo_C.h)
 
 target_link_libraries(${PROJECT_NAME} ${SDL2_LIB_DIR}/SDL2.lib ${SDL2_LIB_DIR}/SDL2main.lib ${SDL2MIXER_LIB_DIR}/SDL2_mixer.lib)

@@ -43,10 +43,6 @@ SDL_Rect get_texture_rect(std::shared_ptr<SDL_Texture> texture) {
     auto [w, h] = get_texture_w_h(texture);
     return {0, 0, w, h};
 }
-
-
-
-//to delete
 vec2d angle_to_vector(double angle) {
     return {std::cos(angle), std::sin(angle)};
 }
@@ -78,7 +74,6 @@ vec2d acceleration_vector_from_keyboard_and_player2(const playerTwo_C &player) {
     if (keyboard_state[SDL_SCANCODE_D]) {
                  acceleration[1] *= 400.0;
     }
-
     return acceleration* 1200.0;
 
 }
@@ -90,17 +85,20 @@ void play_the_game(SDL_Renderer *renderer) {
     SDL_Rect player_rect = get_texture_rect(player_texture);
     SDL_Rect street_rect = get_texture_rect(street_texture);
     auto player2_texture1 = load_texture(renderer, "bot.bmp");
-    auto player2_texture2 = load_texture(renderer, "bot.bmp");
-    auto player2_texture3 = load_texture(renderer, "bot.bmp");
 
-    SDL_Rect two1_rect = get_texture_rect(player2_texture1);
-    SDL_Rect two2_rect = get_texture_rect(player2_texture2);
-    SDL_Rect two3_rect = get_texture_rect(player2_texture3);
+
+    SDL_Rect *two_rect = new SDL_Rect;
+
+    //SDL_Rect two2_rect = get_texture_rect(player2_texture1);
+   // SDL_Rect two3_rect = get_texture_rect(player2_texture1);
 
     player_c player = {M_PI/2, {120.0, 200.0}};
-    playerTwo_C two1 = {M_PI , {520.0, 180.0}};
-    playerTwo_C two2 = {M_PI , {420.0, 240.0}};
-    playerTwo_C two3 = {M_PI , {320.0, 350.0}};
+    double playerTwoDirection = M_PI;
+    playerTwo_C *player2 = new playerTwo_C[8];
+    vec2d standard_resp[3] = {{520.0,180.0},{420.0, 240.0},{320.0, 350.0}};
+    int countOfbots= 0;
+    int lastTypeOfbots= 0;
+
     int gaming = true;
     auto prev_tick = SDL_GetTicks();
     while (gaming) {
@@ -138,40 +136,66 @@ void play_the_game(SDL_Renderer *renderer) {
 
 
         }
-
-
-        two1.acceleration = acceleration_vector_from_keyboard_and_player2(two1);
-        two1 = two1.next_state(TICK_TIME);
-        two2.acceleration = acceleration_vector_from_keyboard_and_player2(two2);
-        two2 = two2.next_state(TICK_TIME);
-        two3.acceleration = acceleration_vector_from_keyboard_and_player2(two3);
-        two3 = two3.next_state(TICK_TIME);
-
-
+        auto *keyboard_state = SDL_GetKeyboardState(nullptr);
+        if(keyboard_state[SDL_SCANCODE_S])
         {
-            auto two1Rect = two1_rect;
-            two1Rect.x = two1.position[0] - two1Rect.w / 3;
-            two1Rect.y = two1.position[1] - two1Rect.h / 3;
+            if(countOfbots <= 4)
+            {
+                //create new car in Game
+                if(lastTypeOfbots == 2)
+                {
+                    two_rect[countOfbots] = get_texture_rect(player2_texture1);
+                    player2[countOfbots] = {playerTwoDirection,standard_resp[lastTypeOfbots]};
+
+                }
+                else if (lastTypeOfbots == 1) {
+
+                    two_rect[countOfbots] = get_texture_rect(player2_texture1);
+                    player2[countOfbots] = {playerTwoDirection,standard_resp[lastTypeOfbots]};
+
+                }
+                else if (lastTypeOfbots == 0) {
+                    two_rect[countOfbots] = get_texture_rect(player2_texture1);
+                    player2[countOfbots] = {playerTwoDirection,standard_resp[lastTypeOfbots]};
+
+                }
+                lastTypeOfbots++;
+                if(lastTypeOfbots==3)
+                {
+                    lastTypeOfbots=0;
+                }
+                countOfbots++;
+
+            }
+            else
+            {
+                std::cout<<"Maks Botow"<<std::endl;
+            }
+
+        }
+        for(int i=0;i<countOfbots;i++)
+        {
+            player2[i].acceleration = acceleration_vector_from_keyboard_and_player2(player2[i]);
+            player2[i]=player2[i].next_state(TICK_TIME);
+        }
+
+       // SDL_Delay
+        {
+
+
+            SDL_Rect *copyTwo_rect = new SDL_Rect;
+            for(int i=0;i<countOfbots;i++)
+            {
+                copyTwo_rect[i]= two_rect[i];
+
+                copyTwo_rect[i].x = player2[i].position[0] - copyTwo_rect[i].w / 3;
+                copyTwo_rect[i].y = player2[i].position[1] - copyTwo_rect[i].h / 3;
             SDL_RenderCopyEx(renderer, player2_texture1.get(),
-                             nullptr, &two1Rect, two1.angle,
+                             nullptr, &copyTwo_rect[i], player2[i].angle,
                              nullptr, SDL_FLIP_NONE);
+            }
         }
-        {
-            auto two2Rect = two2_rect;
-            two2Rect.x = two2.position[0] - two2Rect.w / 3;
-            two2Rect.y = two2.position[1] - two2Rect.h / 3;
-            SDL_RenderCopyEx(renderer, player2_texture2.get(),
-                             nullptr, &two2Rect, two2.angle,
-                             nullptr, SDL_FLIP_NONE);
-        }
-        {
-            auto two3Rect = two3_rect;
-            two3Rect.x = two3.position[0] - two3Rect.w / 3;
-            two3Rect.y = two3.position[1] - two3Rect.h / 3;
-            SDL_RenderCopyEx(renderer, player2_texture3.get(),
-                             nullptr, &two3Rect, two3.angle,
-                             nullptr, SDL_FLIP_NONE);
-        }
+
         SDL_RenderPresent(renderer);
         int current_tick = SDL_GetTicks();
         SDL_Delay(TICK_TIME - (current_tick - prev_tick));

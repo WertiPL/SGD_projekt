@@ -99,6 +99,7 @@ void play_the_game(SDL_Renderer *renderer) {
     SDL_Rect street_rect = get_texture_rect(street_texture);
     auto player2_texture1 = load_texture(renderer, "bot.bmp");
 
+
     int limitOfbots=4;
 
     SDL_Rect *two_rect = new SDL_Rect[limitOfbots];
@@ -110,6 +111,7 @@ void play_the_game(SDL_Renderer *renderer) {
     vec2d standard_resp[3] = {{520.0,200.0},{420.0, 240.0},{320.0, 350.0}};
     int countOfbots= 0;
     int lastTypeOfbots= 0;
+
 
     int gaming = true;
     auto prev_tick = SDL_GetTicks();
@@ -222,11 +224,16 @@ void play_the_game(SDL_Renderer *renderer) {
         {
             player2[i].acceleration = acceleration_vector_from_keyboard_and_player2(player2[i]);
             player2[i]=player2[i].next_state(TICK_TIME);
+
             if(checkIfWin(player,player2,countOfbots))
             {
                 std::cout<<"Player1 lose"<<std::endl;
             }
         }
+
+
+
+
 
         //rendering position of Player 2
         {

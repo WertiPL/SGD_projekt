@@ -8,6 +8,7 @@
 #include <SDL.h>
 
 #include "player_c.h"
+#include "playerTwo_C.h"
 
 const int TICK_TIME = 33;
 
@@ -44,36 +45,7 @@ SDL_Rect get_texture_rect(std::shared_ptr<SDL_Texture> texture) {
 }
 
 
-class playerTwo_C {
-public:
-    double angle;
-    vec2d position;
-    vec2d velocity;
-    vec2d acceleration;
 
-    playerTwo_C next_state(double dt_ms) {
-        double dt = dt_ms / 1000.0;
-        playerTwo_C next = *this;
-        const double C = 0.1;
-        vec2d friction = {0.0,0.0};
-        if (len(velocity) > 0) {
-            friction = velocity*len(velocity)*C;
-        }
-        auto a = acceleration - friction;
-        next.position = position + velocity * dt + (a * dt * dt) / 2;
-        if(next.position[1]<=120)
-        {
-            next.position[1]=120;
-        }
-        else if(next.position[1]>=400)
-        {
-            next.position[1]=400;
-        }
-        next.velocity = velocity + a * dt;
-        next.acceleration = a;
-        return next;
-    }
-};
 //to delete
 vec2d angle_to_vector(double angle) {
     return {std::cos(angle), std::sin(angle)};
@@ -100,11 +72,12 @@ vec2d acceleration_vector_from_keyboard_and_player2(const playerTwo_C &player) {
 
     if (keyboard_state[SDL_SCANCODE_A]) {
         acceleration = acceleration + forward_vec;
+        acceleration[1] *= 1.0;
+
     }
     if (keyboard_state[SDL_SCANCODE_D]) {
-        acceleration = acceleration-forward_vec;
+                 acceleration[1] *= 400.0;
     }
-
 
     return acceleration* 1200.0;
 
@@ -116,12 +89,18 @@ void play_the_game(SDL_Renderer *renderer) {
 
     SDL_Rect player_rect = get_texture_rect(player_texture);
     SDL_Rect street_rect = get_texture_rect(street_texture);
-    auto player2_texture = load_texture(renderer, "bot.bmp");
+    auto player2_texture1 = load_texture(renderer, "bot.bmp");
+    auto player2_texture2 = load_texture(renderer, "bot.bmp");
+    auto player2_texture3 = load_texture(renderer, "bot.bmp");
 
-    SDL_Rect two1_rect = get_texture_rect(player2_texture);
+    SDL_Rect two1_rect = get_texture_rect(player2_texture1);
+    SDL_Rect two2_rect = get_texture_rect(player2_texture2);
+    SDL_Rect two3_rect = get_texture_rect(player2_texture3);
 
     player_c player = {M_PI/2, {120.0, 200.0}};
-    playerTwo_C two1 = {M_PI , {420.0, 200.0}};
+    playerTwo_C two1 = {M_PI , {520.0, 180.0}};
+    playerTwo_C two2 = {M_PI , {420.0, 240.0}};
+    playerTwo_C two3 = {M_PI , {320.0, 350.0}};
     int gaming = true;
     auto prev_tick = SDL_GetTicks();
     while (gaming) {
@@ -163,13 +142,34 @@ void play_the_game(SDL_Renderer *renderer) {
 
         two1.acceleration = acceleration_vector_from_keyboard_and_player2(two1);
         two1 = two1.next_state(TICK_TIME);
+        two2.acceleration = acceleration_vector_from_keyboard_and_player2(two2);
+        two2 = two2.next_state(TICK_TIME);
+        two3.acceleration = acceleration_vector_from_keyboard_and_player2(two3);
+        two3 = two3.next_state(TICK_TIME);
+
 
         {
             auto two1Rect = two1_rect;
             two1Rect.x = two1.position[0] - two1Rect.w / 3;
             two1Rect.y = two1.position[1] - two1Rect.h / 3;
-            SDL_RenderCopyEx(renderer, player2_texture.get(),
+            SDL_RenderCopyEx(renderer, player2_texture1.get(),
                              nullptr, &two1Rect, two1.angle,
+                             nullptr, SDL_FLIP_NONE);
+        }
+        {
+            auto two2Rect = two2_rect;
+            two2Rect.x = two2.position[0] - two2Rect.w / 3;
+            two2Rect.y = two2.position[1] - two2Rect.h / 3;
+            SDL_RenderCopyEx(renderer, player2_texture2.get(),
+                             nullptr, &two2Rect, two2.angle,
+                             nullptr, SDL_FLIP_NONE);
+        }
+        {
+            auto two3Rect = two3_rect;
+            two3Rect.x = two3.position[0] - two3Rect.w / 3;
+            two3Rect.y = two3.position[1] - two3Rect.h / 3;
+            SDL_RenderCopyEx(renderer, player2_texture3.get(),
+                             nullptr, &two3Rect, two3.angle,
                              nullptr, SDL_FLIP_NONE);
         }
         SDL_RenderPresent(renderer);

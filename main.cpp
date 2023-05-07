@@ -7,6 +7,8 @@
 
 #include <SDL.h>
 
+#include "player_c.h"
+
 const int TICK_TIME = 33;
 
 std::shared_ptr<SDL_Texture> load_texture(SDL_Renderer *renderer, std::string fname) {
@@ -41,56 +43,7 @@ SDL_Rect get_texture_rect(std::shared_ptr<SDL_Texture> texture) {
     return {0, 0, w, h};
 }
 
-using vec2d = std::array<double, 2>;
 
-vec2d operator+(vec2d a, vec2d b) {
-    return {a[0] + b[0], a[1] + b[1]};
-}
-
-vec2d operator-(vec2d a, vec2d b) {
-    return {a[0] - b[0], a[1] - b[1]};
-}
-
-vec2d operator*(vec2d a, double b) {
-    return {a[0] * b, a[1] * b};
-}
-
-vec2d operator/(vec2d a, double b) {
-    return a * (1.0 / b);
-}
-double len(vec2d v) {
-    return std::sqrt(v[0]*v[0] + v[1]*v[1]);
-}
-class player_c {
-public:
-    double angle;
-    vec2d position;
-    vec2d velocity;
-    vec2d acceleration;
-
-    player_c next_state(double dt_ms) {
-        double dt = dt_ms / 1000.0;
-        player_c next = *this;
-        const double C = 0.1;
-        vec2d friction = {0.0,0.0};
-        if (len(velocity) > 0) {
-            friction = velocity*len(velocity)*C;
-        }
-        auto a = acceleration - friction;
-        next.position = position + velocity * dt + (a * dt * dt) / 2;
-        if(next.position[1]<=120)
-        {
-            next.position[1]=120;
-        }
-        else if(next.position[1]>=400)
-        {
-            next.position[1]=400;
-        }
-        next.velocity = velocity + a * dt;
-        next.acceleration = a;
-        return next;
-    }
-};
 class playerTwo_C {
 public:
     double angle;
@@ -107,6 +60,10 @@ public:
             friction = velocity*len(velocity)*C;
         }
         auto a = acceleration - friction;
+/*        if(a[1]<=1200)
+        {
+            a[1]=1200;
+        }*/
         next.position = position + velocity * dt + (a * dt * dt) / 2;
         next.velocity = velocity + a * dt;
         next.acceleration = a;
@@ -129,35 +86,35 @@ vec2d acceleration_vector_from_keyboard_and_player(const player_c &player) {
         acceleration = acceleration - forward_vec;
     }
 
-        return acceleration* 200.0;
+        return acceleration* 1200.0;
     }
 
-vec2d acceleration_vector_from_keyboard_and_player(const playerTwo_C &playerTwo) {
+vec2d acceleration_vector_from_keyboard_and_player2(const player_c &playerTwo) {
     auto *keyboard_state = SDL_GetKeyboardState(nullptr);
     vec2d forward_vec = angle_to_vector(playerTwo.angle);
     vec2d acceleration = {0, 0};
 
-    if (keyboard_state[SDL_SCANCODE_D]) {
+    if (keyboard_state[SDL_SCANCODE_A]) {
         acceleration = acceleration + forward_vec;
     }
-    if (keyboard_state[SDL_SCANCODE_A]) {
+    if (keyboard_state[SDL_SCANCODE_D]) {
         acceleration = acceleration - forward_vec;
     }
 
-    acceleration * 250.0;
 
-        return acceleration;
+    return acceleration* 1200.0;
 
 }
 
 void play_the_game(SDL_Renderer *renderer) {
     auto street_texture = load_texture(renderer, "street.bmp");
-    auto clouds_texture = load_texture(renderer, "clouds.bmp");
     auto player_texture = load_texture(renderer, "car.bmp");
 
     SDL_Rect player_rect = get_texture_rect(player_texture);
     SDL_Rect street_rect = get_texture_rect(street_texture);
-    SDL_Rect clouds_rect = get_texture_rect(clouds_texture);
+    auto player2_texture = load_texture(renderer, "bot.bmp");
+
+    SDL_Rect two1_rect = get_texture_rect(player2_texture);
 
     player_c player = {M_PI/2, {120.0, 200.0}};
     int gaming = true;
@@ -176,28 +133,41 @@ void play_the_game(SDL_Renderer *renderer) {
             }
         }
 
+
+
+
         player.acceleration = acceleration_vector_from_keyboard_and_player(player);
-        //player.angle = angle_from_keyboard_and_player(player);
         player = player.next_state(TICK_TIME);
-
-// Solid background Color
-//        SDL_SetRenderDrawColor(renderer, 1, 40, 128, 255);
-//        SDL_RenderClear(renderer);
-
 
         {
             auto rect = player_rect;
+
 
             rect.x = player.position[0] - rect.w / 2;
             rect.y = player.position[1] - rect.h / 2;
 
 
+
+
             SDL_RenderCopy(renderer, street_texture.get(), nullptr, nullptr);
+
             SDL_RenderCopyEx(renderer, player_texture.get(),
                              nullptr, &rect,  player.angle,
                              nullptr, SDL_FLIP_NONE);
-            clouds_rect = {200,200};
-            SDL_RenderCopy(renderer, clouds_texture.get(), nullptr, &clouds_rect);
+
+
+        }
+        player_c two1 = {M_PI, {500.0, 200.0}};
+
+        two1.acceleration = acceleration_vector_from_keyboard_and_player2(two1);
+        two1 = two1.next_state(TICK_TIME);
+        {
+            auto two1Rect = two1_rect;
+            two1Rect.x = two1.position[0] - two1Rect.w / 2;
+            two1Rect.y = two1.position[1] - two1Rect.h / 2;
+            SDL_RenderCopyEx(renderer, player2_texture.get(),
+                             nullptr, &two1Rect, two1.angle,
+                             nullptr, SDL_FLIP_NONE);
         }
         SDL_RenderPresent(renderer);
         int current_tick = SDL_GetTicks();

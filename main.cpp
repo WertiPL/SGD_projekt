@@ -81,8 +81,8 @@ bool checkIfWin(player_c &player,playerTwo_C *player2,int players2num)
 {
     for(int i=0;i<players2num;i++)
     {
-        std::cout<<"Player1:"<<round(player.position[0])<<":"<<round(player.position[1])<<std::endl;
-        std::cout<<"Player2:"<<round(player2[i].position[0])<<":"<<round(player2[i].position[1])<<std::endl;
+        //std::cout<<"Player1:"<<round(player.position[0])<<":"<<round(player.position[1])<<std::endl;
+       // std::cout<<"Player2:"<<round(player2[i].position[0])<<":"<<round(player2[i].position[1])<<std::endl;
         if(round(player.position[0]) == round(player2[i].position[0]) && round(player.position[1]) == round(player2[i].position[1]))
         {
             return true;

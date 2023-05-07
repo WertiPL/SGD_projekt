@@ -7,6 +7,9 @@
 
 #include <SDL.h>
 
+#include "player_c.h"
+#include "playerTwo_C.h"
+
 const int TICK_TIME = 33;
 
 std::shared_ptr<SDL_Texture> load_texture(SDL_Renderer *renderer, std::string fname) {
@@ -40,80 +43,6 @@ SDL_Rect get_texture_rect(std::shared_ptr<SDL_Texture> texture) {
     auto [w, h] = get_texture_w_h(texture);
     return {0, 0, w, h};
 }
-
-using vec2d = std::array<double, 2>;
-
-vec2d operator+(vec2d a, vec2d b) {
-    return {a[0] + b[0], a[1] + b[1]};
-}
-
-vec2d operator-(vec2d a, vec2d b) {
-    return {a[0] - b[0], a[1] - b[1]};
-}
-
-vec2d operator*(vec2d a, double b) {
-    return {a[0] * b, a[1] * b};
-}
-
-vec2d operator/(vec2d a, double b) {
-    return a * (1.0 / b);
-}
-double len(vec2d v) {
-    return std::sqrt(v[0]*v[0] + v[1]*v[1]);
-}
-class player_c {
-public:
-    double angle;
-    vec2d position;
-    vec2d velocity;
-    vec2d acceleration;
-
-    player_c next_state(double dt_ms) {
-        double dt = dt_ms / 1000.0;
-        player_c next = *this;
-        const double C = 0.1;
-        vec2d friction = {0.0,0.0};
-        if (len(velocity) > 0) {
-            friction = velocity*len(velocity)*C;
-        }
-        auto a = acceleration - friction;
-        next.position = position + velocity * dt + (a * dt * dt) / 2;
-        if(next.position[1]<=120)
-        {
-            next.position[1]=120;
-        }
-        else if(next.position[1]>=400)
-        {
-            next.position[1]=400;
-        }
-        next.velocity = velocity + a * dt;
-        next.acceleration = a;
-        return next;
-    }
-};
-class playerTwo_C {
-public:
-    double angle;
-    vec2d position;
-    vec2d velocity;
-    vec2d acceleration;
-
-    playerTwo_C next_state(double dt_ms) {
-        double dt = dt_ms / 1000.0;
-        playerTwo_C next = *this;
-        const double C = 0.1;
-        vec2d friction = {0.0,0.0};
-        if (len(velocity) > 0) {
-            friction = velocity*len(velocity)*C;
-        }
-        auto a = acceleration - friction;
-        next.position = position + velocity * dt + (a * dt * dt) / 2;
-        next.velocity = velocity + a * dt;
-        next.acceleration = a;
-        return next;
-    }
-};
-//to delete
 vec2d angle_to_vector(double angle) {
     return {std::cos(angle), std::sin(angle)};
 }
@@ -129,37 +58,59 @@ vec2d acceleration_vector_from_keyboard_and_player(const player_c &player) {
         acceleration = acceleration - forward_vec;
     }
 
-        return acceleration* 200.0;
+        return acceleration* 1200.0;
     }
 
-vec2d acceleration_vector_from_keyboard_and_player(const playerTwo_C &playerTwo) {
+vec2d acceleration_vector_from_keyboard_and_player2(const playerTwo_C &player) {
     auto *keyboard_state = SDL_GetKeyboardState(nullptr);
-    vec2d forward_vec = angle_to_vector(playerTwo.angle);
+    vec2d forward_vec = angle_to_vector(player.angle);
     vec2d acceleration = {0, 0};
 
-    if (keyboard_state[SDL_SCANCODE_D]) {
-        acceleration = acceleration + forward_vec;
-    }
     if (keyboard_state[SDL_SCANCODE_A]) {
-        acceleration = acceleration - forward_vec;
+        acceleration = acceleration + forward_vec;
+        acceleration[1] *= 1.0;
+
     }
+    if (keyboard_state[SDL_SCANCODE_D]) {
+                 acceleration[1] *= 400.0;
+    }
+    return acceleration* 1200.0;
 
-    acceleration * 250.0;
-
-        return acceleration;
-
+}
+bool checkIfWin(player_c &player,playerTwo_C *player2,int players2num)
+{
+    for(int i=0;i<players2num;i++)
+    {
+        std::cout<<"Player1:"<<round(player.position[0])<<":"<<round(player.position[1])<<std::endl;
+        std::cout<<"Player2:"<<round(player2[i].position[0])<<":"<<round(player2[i].position[1])<<std::endl;
+        if(round(player.position[0]) == round(player2[i].position[0]) && round(player.position[1]) == round(player2[i].position[1]))
+        {
+            return true;
+        }
+    }
+    return false;
 }
 
 void play_the_game(SDL_Renderer *renderer) {
     auto street_texture = load_texture(renderer, "street.bmp");
-    auto clouds_texture = load_texture(renderer, "clouds.bmp");
     auto player_texture = load_texture(renderer, "car.bmp");
 
     SDL_Rect player_rect = get_texture_rect(player_texture);
     SDL_Rect street_rect = get_texture_rect(street_texture);
-    SDL_Rect clouds_rect = get_texture_rect(clouds_texture);
+    auto player2_texture1 = load_texture(renderer, "bot.bmp");
 
-    player_c player = {M_PI/2, {120.0, 200.0}};
+    int limitOfbots=4;
+
+    SDL_Rect *two_rect = new SDL_Rect[limitOfbots];
+
+
+    player_c player = {M_PI/2, {123.0, 200.0}};
+    double playerTwoDirection = M_PI;
+    playerTwo_C *player2 = new playerTwo_C[8];
+    vec2d standard_resp[3] = {{520.0,200.0},{420.0, 240.0},{320.0, 350.0}};
+    int countOfbots= 0;
+    int lastTypeOfbots= 0;
+
     int gaming = true;
     auto prev_tick = SDL_GetTicks();
     while (gaming) {
@@ -172,33 +123,136 @@ void play_the_game(SDL_Renderer *renderer) {
                     break;
                 case SDL_KEYDOWN:
                     if (e.key.keysym.sym == SDLK_q) gaming = false;
+
+                    if (e.key.keysym.sym == SDLK_s)
+                    {
+
+                        //std::cout<<"Pressed"<<std::endl;
+                        if(countOfbots <= limitOfbots)
+                        {
+                            //create new car in Game
+                            if(lastTypeOfbots == 2)
+                            {
+                                two_rect[countOfbots] = get_texture_rect(player2_texture1);
+                                player2[countOfbots] = {playerTwoDirection,standard_resp[lastTypeOfbots]};
+                            }
+                            else if (lastTypeOfbots == 1) {
+                                two_rect[countOfbots] = get_texture_rect(player2_texture1);
+                                player2[countOfbots] = {playerTwoDirection,standard_resp[lastTypeOfbots]};
+
+                            }
+                            else if (lastTypeOfbots == 0) {
+                                two_rect[countOfbots] = get_texture_rect(player2_texture1);
+                                player2[countOfbots] = {playerTwoDirection,standard_resp[lastTypeOfbots]};
+
+                            }
+                            lastTypeOfbots++;
+                            if(lastTypeOfbots==3)
+                            {
+                                lastTypeOfbots=0;
+                            }
+
+
+                            countOfbots++;
+                            if(countOfbots==limitOfbots)
+                            {
+                                countOfbots=limitOfbots;
+                            }
+                        }
+                        else
+                        {
+                            for(int i=0;i<countOfbots;i++ )
+                            {
+                                if(player2[i].finished == true)
+                                {
+                                    if(lastTypeOfbots == 2)
+                                    {
+                                        two_rect[i] = get_texture_rect(player2_texture1);
+                                        player2[i] = {playerTwoDirection,standard_resp[lastTypeOfbots]};
+                                    }
+                                    else if (lastTypeOfbots == 1) {
+                                        two_rect[i] = get_texture_rect(player2_texture1);
+                                        player2[i] = {playerTwoDirection,standard_resp[lastTypeOfbots]};
+
+                                    }
+                                    else if (lastTypeOfbots == 0) {
+                                        two_rect[i] = get_texture_rect(player2_texture1);
+                                        player2[i] = {playerTwoDirection,standard_resp[lastTypeOfbots]};
+
+                                    }
+                                    lastTypeOfbots++;
+                                    if(lastTypeOfbots==3)
+                                    {
+                                        lastTypeOfbots=0;
+                                    }
+                                }
+                            }
+                            std::cout<<"Limit number of Bots achieved"<<std::endl;
+
+                        }
+                    }
                     break;
             }
         }
 
+
+
+
         player.acceleration = acceleration_vector_from_keyboard_and_player(player);
-        //player.angle = angle_from_keyboard_and_player(player);
         player = player.next_state(TICK_TIME);
-
-// Solid background Color
-//        SDL_SetRenderDrawColor(renderer, 1, 40, 128, 255);
-//        SDL_RenderClear(renderer);
-
 
         {
             auto rect = player_rect;
 
+
             rect.x = player.position[0] - rect.w / 2;
             rect.y = player.position[1] - rect.h / 2;
 
-
             SDL_RenderCopy(renderer, street_texture.get(), nullptr, nullptr);
+
             SDL_RenderCopyEx(renderer, player_texture.get(),
                              nullptr, &rect,  player.angle,
                              nullptr, SDL_FLIP_NONE);
-            clouds_rect = {200,200};
-            SDL_RenderCopy(renderer, clouds_texture.get(), nullptr, &clouds_rect);
+
+
         }
+
+        //changing position of Player 2
+        for(int i=0;i<countOfbots;i++)
+        {
+            player2[i].acceleration = acceleration_vector_from_keyboard_and_player2(player2[i]);
+            player2[i]=player2[i].next_state(TICK_TIME);
+            if(checkIfWin(player,player2,countOfbots))
+            {
+                std::cout<<"Player1 lose"<<std::endl;
+            }
+        }
+
+        //rendering position of Player 2
+        {
+
+
+            SDL_Rect *copyTwo_rect = new SDL_Rect;
+            for(int i=0;i<countOfbots;i++)
+            {
+                copyTwo_rect[i]= two_rect[i];
+
+                copyTwo_rect[i].x = player2[i].position[0] - copyTwo_rect[i].w / 3;
+                copyTwo_rect[i].y = player2[i].position[1] - copyTwo_rect[i].h / 3;
+                if(!player2[i].checkstate())
+                {
+                    SDL_RenderCopyEx(renderer, player2_texture1.get(),
+                                     nullptr, &copyTwo_rect[i], player2[i].angle,
+                                     nullptr, SDL_FLIP_NONE);
+
+                }else
+                {
+                    player2[i].finished = true;
+                }
+
+            }
+        }
+
         SDL_RenderPresent(renderer);
         int current_tick = SDL_GetTicks();
         SDL_Delay(TICK_TIME - (current_tick - prev_tick));

@@ -17,8 +17,8 @@ public:
     vec2d acceleration;
     bool finished;
     playerTwo_C next_state(double dt_ms);
-    bool checkstate();
-    vec2d *colissionMap = new vec2d[1800];
+    bool checkState();
+    vec2d colissionMap[193];
     playerTwo_C changePosition();
 
 };

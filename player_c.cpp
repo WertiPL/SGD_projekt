@@ -27,48 +27,63 @@ player_c player_c::next_state(double dt_ms) {
         {
             next.position[1]=400;
         }
-        next.changePosition();
+        //next.changePosition();
         next.velocity = velocity + a * dt;
         next.acceleration = a;
         return next;
     }
 player_c player_c::changePosition() {
     player_c next = *this;
-
+    double haft_width=32;
+    double haftHeight= 26 / 2;
         // 15 left -6 + 6
         // 15 right -5 + 5
         vec2d temp;
         int i=0;
-    int maks = i +15;
-    for(i;i<=15;i++)
+    double j = -haftHeight;
+//right
+    int maks = i + (haftHeight*2);
+    for(i;i<maks;i++)
         {
-            double j = -6;
-            temp = {15.0,j};
-            next.colissionMap[i] = next.position+temp;
+            temp = {haft_width,j};
+            next.colissionMap[i][0] = next.position[0]+temp[0];
+            next.colissionMap[i][1] = next.position[1]+temp[1];
+
             j++;
         }
-    maks = i +15;
-    for( i;i<=maks;i++)
+    //left
+
+    maks = i +(haftHeight*2);
+    j = -haftHeight;
+
+    for( i;i<maks;i++)
     {
-        double j = -6;
-        temp = {-15.0,j};
-        next.colissionMap[i] = next.position+temp;
+        temp = {-haft_width,j};
+        next.colissionMap[i][0] = next.position[0]+temp[0];
+        next.colissionMap[i][1] = next.position[1]+temp[1];
+
         j++;
     }
-    maks = i +30;
-    for( i;i<=maks;i++)
+
+
+    maks = i +(haft_width*2);
+    j = -haft_width;
+
+    for( i;i<maks;i++)
     {
-        double j = -15;
-        temp = {-j,-6};
-        next.colissionMap[i] = next.position+temp;
+        temp = {j,-haftHeight};
+        next.colissionMap[i][0] = next.position[0]+temp[0];
+        next.colissionMap[i][1] = next.position[1]+temp[1];
         j++;
     }
-    maks = i +30;
-    for( i;i<=maks;i++)
+    maks = i +(haft_width*2);
+    j = -haft_width;
+
+    for( i;i<maks;i++)
     {
-        double j = -15;
-        temp = {-j,6};
-        next.colissionMap[i] = next.position+temp;
+        temp = {j, haftHeight};
+        next.colissionMap[i][0] = next.position[0]+temp[0];
+        next.colissionMap[i][1] = next.position[1]+temp[1];
         j++;
     }
     return next;

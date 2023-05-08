@@ -79,21 +79,29 @@ vec2d acceleration_vector_from_keyboard_and_player2(const playerTwo_C &player) {
 }
 bool checkIfWin(player_c &player,playerTwo_C *player2,int players2num)
 {
-    for(int i=0;i<players2num;i++)
+    if(players2num >0)
     {
-        //std::cout<<"Player1:"<<round(player.position[0])<<":"<<round(player.position[1])<<std::endl;
-       // std::cout<<"Player2:"<<round(player2[i].position[0])<<":"<<round(player2[i].position[1])<<std::endl;
-       for (int j=0;j<90;i++)
-       {
-           if(round(player.colissionMap[j][0]) == round(player2[i].colissionMap[j][0]) &&
-           round(player.colissionMap[j][1]) == round(player2[i].colissionMap[j][1]))
-           {
-               return true;
-           }
-       }
+        for(int i=0;i<=players2num;i++)
+        {
+            //  std::cout<<"Player1:"<<round(player.colissionMap[0][1])<<":"<<round(player.colissionMap[0][1])<<std::endl;
+            //  std::cout<<"Player2:"<<round(player2[i].colissionMap[0][1])<<":"<<round(player2[i].colissionMap[0][1])<<std::endl;
+            for (int j=0;j<90;j++)
+            {
+                for(int k=0;k<90;k++)
+                {
 
+                    player_c tempPlayer = player;
+                    if(round(player.colissionMap[k][0]) == round(player2[i].colissionMap[j][0]) &&
+                       round(player.colissionMap[k][1]) == round(player2[i].colissionMap[j][1]))
+                    {
+                        return true;
+                    }
+                }
 
+            }
+        }
     }
+
     return false;
 }
 
@@ -111,6 +119,7 @@ void play_the_game(SDL_Renderer *renderer) {
 
 
     player_c player = {M_PI/2, {123.0, 200.0}};
+    player.changePosition();
     double playerTwoDirection = M_PI;
     playerTwo_C *player2 = new playerTwo_C[8];
     vec2d standard_resp[3] = {{520.0,200.0},{420.0, 240.0},{320.0, 350.0}};
@@ -141,18 +150,18 @@ void play_the_game(SDL_Renderer *renderer) {
                             {
                                 two_rect[countOfbots] = get_texture_rect(player2_texture1);
                                 player2[countOfbots] = {playerTwoDirection,standard_resp[lastTypeOfbots]};
-                                player2[countOfbots].changePosition();
+                                //player2[countOfbots].changePosition();
                             }
                             else if (lastTypeOfbots == 1) {
                                 two_rect[countOfbots] = get_texture_rect(player2_texture1);
                                 player2[countOfbots] = {playerTwoDirection,standard_resp[lastTypeOfbots]};
-                                player2[countOfbots].changePosition();
+                                //player2[countOfbots].changePosition();
 
                             }
                             else if (lastTypeOfbots == 0) {
                                 two_rect[countOfbots] = get_texture_rect(player2_texture1);
                                 player2[countOfbots] = {playerTwoDirection,standard_resp[lastTypeOfbots]};
-                                player2[countOfbots].changePosition();
+                                //player2[countOfbots].changePosition();
                             }
                             lastTypeOfbots++;
                             if(lastTypeOfbots==3)
@@ -208,6 +217,8 @@ void play_the_game(SDL_Renderer *renderer) {
 
         player.acceleration = acceleration_vector_from_keyboard_and_player(player);
         player = player.next_state(TICK_TIME);
+        player = player.changePosition();
+
 
         {
             auto rect = player_rect;
@@ -230,10 +241,8 @@ void play_the_game(SDL_Renderer *renderer) {
         {
             player2[i].acceleration = acceleration_vector_from_keyboard_and_player2(player2[i]);
             player2[i]=player2[i].next_state(TICK_TIME);
-            if(checkIfWin(player,player2,countOfbots))
-            {
-                std::cout<<"Player1 lose"<<std::endl;
-            }
+            player2[i]=player2[i].changePosition();
+
         }
 
         //rendering position of Player 2
@@ -247,7 +256,7 @@ void play_the_game(SDL_Renderer *renderer) {
 
                 copyTwo_rect[i].x = player2[i].position[0] - copyTwo_rect[i].w / 3;
                 copyTwo_rect[i].y = player2[i].position[1] - copyTwo_rect[i].h / 3;
-                if(!player2[i].checkstate())
+                if(!player2[i].checkState())
                 {
                     SDL_RenderCopyEx(renderer, player2_texture1.get(),
                                      nullptr, &copyTwo_rect[i], player2[i].angle,
@@ -258,6 +267,14 @@ void play_the_game(SDL_Renderer *renderer) {
                     player2[i].finished = true;
                 }
 
+            }
+            if(checkIfWin(player,player2,countOfbots))
+            {
+                std::cout<<"Player2 Win"<<std::endl;
+            }
+            else
+            {
+                //std::cout<<"Player1 Win"<<std::endl;
             }
         }
 

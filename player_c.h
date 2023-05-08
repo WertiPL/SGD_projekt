@@ -14,7 +14,7 @@ double angle;
 vec2d position;
 vec2d velocity;
 vec2d acceleration;
-vec2d *colissionMap = new vec2d[1800];
+vec2d colissionMap[181];
 player_c changePosition();
 player_c next_state(double dt_ms);
 };

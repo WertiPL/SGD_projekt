@@ -232,7 +232,7 @@ void play_the_game(SDL_Renderer *renderer) {
         {
 
 
-            SDL_Rect *copyTwo_rect = new SDL_Rect;
+            SDL_Rect *copyTwo_rect = new SDL_Rect[limitOfbots];
             for(int i=0;i<countOfbots;i++)
             {
                 copyTwo_rect[i]= two_rect[i];

@@ -83,10 +83,16 @@ bool checkIfWin(player_c &player,playerTwo_C *player2,int players2num)
     {
         //std::cout<<"Player1:"<<round(player.position[0])<<":"<<round(player.position[1])<<std::endl;
        // std::cout<<"Player2:"<<round(player2[i].position[0])<<":"<<round(player2[i].position[1])<<std::endl;
-        if(round(player.position[0]) == round(player2[i].position[0]) && round(player.position[1]) == round(player2[i].position[1]))
-        {
-            return true;
-        }
+       for (int j=0;j<90;i++)
+       {
+           if(round(player.colissionMap[j][0]) == round(player2[i].colissionMap[j][0]) &&
+           round(player.colissionMap[j][1]) == round(player2[i].colissionMap[j][1]))
+           {
+               return true;
+           }
+       }
+
+
     }
     return false;
 }
@@ -135,16 +141,18 @@ void play_the_game(SDL_Renderer *renderer) {
                             {
                                 two_rect[countOfbots] = get_texture_rect(player2_texture1);
                                 player2[countOfbots] = {playerTwoDirection,standard_resp[lastTypeOfbots]};
+                                player2[countOfbots].changePosition();
                             }
                             else if (lastTypeOfbots == 1) {
                                 two_rect[countOfbots] = get_texture_rect(player2_texture1);
                                 player2[countOfbots] = {playerTwoDirection,standard_resp[lastTypeOfbots]};
+                                player2[countOfbots].changePosition();
 
                             }
                             else if (lastTypeOfbots == 0) {
                                 two_rect[countOfbots] = get_texture_rect(player2_texture1);
                                 player2[countOfbots] = {playerTwoDirection,standard_resp[lastTypeOfbots]};
-
+                                player2[countOfbots].changePosition();
                             }
                             lastTypeOfbots++;
                             if(lastTypeOfbots==3)

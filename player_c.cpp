@@ -27,7 +27,49 @@ player_c player_c::next_state(double dt_ms) {
         {
             next.position[1]=400;
         }
+        next.changePosition();
         next.velocity = velocity + a * dt;
         next.acceleration = a;
         return next;
     }
+player_c player_c::changePosition() {
+    player_c next = *this;
+
+        // 15 left -6 + 6
+        // 15 right -5 + 5
+        vec2d temp;
+        int i=0;
+    int maks = i +15;
+    for(i;i<=15;i++)
+        {
+            double j = -6;
+            temp = {15.0,j};
+            next.colissionMap[i] = next.position+temp;
+            j++;
+        }
+    maks = i +15;
+    for( i;i<=maks;i++)
+    {
+        double j = -6;
+        temp = {-15.0,j};
+        next.colissionMap[i] = next.position+temp;
+        j++;
+    }
+    maks = i +30;
+    for( i;i<=maks;i++)
+    {
+        double j = -15;
+        temp = {-j,-6};
+        next.colissionMap[i] = next.position+temp;
+        j++;
+    }
+    maks = i +30;
+    for( i;i<=maks;i++)
+    {
+        double j = -15;
+        temp = {-j,6};
+        next.colissionMap[i] = next.position+temp;
+        j++;
+    }
+    return next;
+}

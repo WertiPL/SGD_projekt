@@ -16,12 +16,12 @@ playerTwo_C playerTwo_C::next_state(double dt_ms) {
     auto a = acceleration - friction;
     next.position = position + velocity * dt + (a * dt * dt) / 2;
 
-
+   // next.changePosition();
     next.velocity = velocity + a * dt;
     next.acceleration = a;
     return next;
 }
-bool playerTwo_C::checkstate() {
+bool playerTwo_C::checkState() {
 
     playerTwo_C next = *this;
 
@@ -31,4 +31,65 @@ bool playerTwo_C::checkstate() {
     }
 
     return false;
+}
+
+playerTwo_C playerTwo_C::changePosition() {
+    playerTwo_C next = *this;
+
+    double haft_width=32;
+    double haftHeight= 32 / 2;
+    // 15 left -6 + 6
+    // 15 right -5 + 5
+
+    // 15 left -6 + 6
+    // 15 right -5 + 5
+    vec2d temp;
+    int i=0;
+    double j = -haftHeight;
+//right
+    int maks = i + (haftHeight*2);
+    for(i;i<maks;i++)
+    {
+        temp = {haft_width,j};
+        next.colissionMap[i][0] = next.position[0]+temp[0];
+        next.colissionMap[i][1] = next.position[1]+temp[1];
+
+        j++;
+    }
+    //left
+
+    maks = i +(haftHeight*2);
+    j = -haftHeight;
+
+    for( i;i<maks;i++)
+    {
+        temp = {-haft_width,j};
+        next.colissionMap[i][0] = next.position[0]+temp[0];
+        next.colissionMap[i][1] = next.position[1]+temp[1];
+
+        j++;
+    }
+
+
+    maks = i +(haft_width*2);
+    j = -haft_width;
+
+    for( i;i<maks;i++)
+    {
+        temp = {j,-haftHeight};
+        next.colissionMap[i][0] = next.position[0]+temp[0];
+        next.colissionMap[i][1] = next.position[1]+temp[1];
+        j++;
+    }
+    maks = i +(haft_width*2);
+    j = -haft_width;
+
+    for( i;i<maks;i++)
+    {
+        temp = {j, haftHeight};
+        next.colissionMap[i][0] = next.position[0]+temp[0];
+        next.colissionMap[i][1] = next.position[1]+temp[1];
+        j++;
+    }
+    return next;
 }

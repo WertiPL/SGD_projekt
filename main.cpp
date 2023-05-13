@@ -114,8 +114,10 @@ void play_the_game(SDL_Renderer *renderer) {
     auto player2_texture1 = load_texture(renderer, "bot.bmp");
 
     int limitOfbots=4;
+    int time=0;
+    int win=60000;
 
-    SDL_Rect *two_rect = new SDL_Rect[limitOfbots];
+    SDL_Rect *two_rect = new SDL_Rect[limitOfbots+1];
 
 
     player_c player = {M_PI/2, {123.0, 200.0}};
@@ -249,7 +251,7 @@ void play_the_game(SDL_Renderer *renderer) {
         {
 
 
-            SDL_Rect *copyTwo_rect = new SDL_Rect[limitOfbots];
+            SDL_Rect *copyTwo_rect = new SDL_Rect[limitOfbots+1];
             for(int i=0;i<countOfbots;i++)
             {
                 copyTwo_rect[i]= two_rect[i];
@@ -274,7 +276,14 @@ void play_the_game(SDL_Renderer *renderer) {
             }
             else
             {
-                //std::cout<<"Player1 Win"<<std::endl;
+                if(time > win)
+                {
+                    std::cout<<"Player1 Win"<<std::endl;
+                }
+                else
+                {
+                    time+=33;
+                }
             }
         }
 

@@ -18,7 +18,7 @@ include_directories(${SDL2_INCLUDE_DIRS})
 include_directories(${SDL2_IMAGE_INCLUDE_DIRS})
 include_directories(${SDL2_TTF_INCLUDE_DIRS})
 set(CMAKE_CXX_STANDARD 20)
-add_executable(${PROJECT_NAME} main.cpp player_c.cpp player_c.h vec2d.cpp vec2d.h playerTwo_C.cpp playerTwo_C.h)
+add_executable(${PROJECT_NAME} main.cpp players/player_c.cpp players/player_c.h engine/vec2d.cpp engine/vec2d.h players/playerTwo_C.cpp players/playerTwo_C.h engine/physics.cpp engine/physics.h)
 
 
 if (CICD)

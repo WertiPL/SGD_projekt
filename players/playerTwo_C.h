@@ -6,7 +6,7 @@
 #define SGD_PROJEKT_PLAYERTWO_C_H
 
 
-#include "vec2d.h"
+#include "../engine/vec2d.h"
 
 class playerTwo_C
 {

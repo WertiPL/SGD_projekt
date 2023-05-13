@@ -7,8 +7,9 @@
 
 #include <SDL.h>
 
-#include "player_c.h"
-#include "playerTwo_C.h"
+#include "players/player_c.h"
+#include "players/playerTwo_C.h"
+#include "engine/physics.h"
 
 const int TICK_TIME = 33;
 
@@ -43,53 +44,17 @@ SDL_Rect get_texture_rect(std::shared_ptr<SDL_Texture> texture) {
     auto [w, h] = get_texture_w_h(texture);
     return {0, 0, w, h};
 }
-vec2d angle_to_vector(double angle) {
-    return {std::cos(angle), std::sin(angle)};
-}
 
-vec2d acceleration_vector_from_keyboard_and_player(const player_c &player) {
-    auto *keyboard_state = SDL_GetKeyboardState(nullptr);
-    vec2d forward_vec = angle_to_vector(player.angle);
-    vec2d acceleration = {0, 0};
-    if (keyboard_state[SDL_SCANCODE_DOWN]) {
-        acceleration = acceleration + forward_vec;
-    }
-    if (keyboard_state[SDL_SCANCODE_UP]) {
-        acceleration = acceleration - forward_vec;
-    }
-
-        return acceleration* 1200.0;
-    }
-
-vec2d acceleration_vector_from_keyboard_and_player2(const playerTwo_C &player) {
-    auto *keyboard_state = SDL_GetKeyboardState(nullptr);
-    vec2d forward_vec = angle_to_vector(player.angle);
-    vec2d acceleration = {0, 0};
-
-    if (keyboard_state[SDL_SCANCODE_A]) {
-        acceleration = acceleration + forward_vec;
-        acceleration[1] *= 1.0;
-
-    }
-    if (keyboard_state[SDL_SCANCODE_D]) {
-                 acceleration[1] *= 400.0;
-    }
-    return acceleration* 1200.0;
-
-}
 bool checkIfWin(player_c &player,playerTwo_C *player2,int players2num)
 {
     if(players2num >0)
     {
         for(int i=0;i<=players2num;i++)
         {
-            //  std::cout<<"Player1:"<<round(player.colissionMap[0][1])<<":"<<round(player.colissionMap[0][1])<<std::endl;
-            //  std::cout<<"Player2:"<<round(player2[i].colissionMap[0][1])<<":"<<round(player2[i].colissionMap[0][1])<<std::endl;
             for (int j=0;j<90;j++)
             {
                 for(int k=0;k<90;k++)
                 {
-
                     player_c tempPlayer = player;
                     if(round(player.colissionMap[k][0]) == round(player2[i].colissionMap[j][0]) &&
                        round(player.colissionMap[k][1]) == round(player2[i].colissionMap[j][1]))
@@ -101,7 +66,6 @@ bool checkIfWin(player_c &player,playerTwo_C *player2,int players2num)
             }
         }
     }
-
     return false;
 }
 
@@ -118,7 +82,7 @@ void play_the_game(SDL_Renderer *renderer) {
     int win=60000;
 
     SDL_Rect *two_rect = new SDL_Rect[limitOfbots+1];
-
+    physics physics;
 
     player_c player = {M_PI/2, {123.0, 200.0}};
     player.changePosition();
@@ -143,8 +107,6 @@ void play_the_game(SDL_Renderer *renderer) {
 
                     if (e.key.keysym.sym == SDLK_s)
                     {
-
-                        //std::cout<<"Pressed"<<std::endl;
                         if(countOfbots <= limitOfbots)
                         {
                             //create new car in Game
@@ -152,18 +114,14 @@ void play_the_game(SDL_Renderer *renderer) {
                             {
                                 two_rect[countOfbots] = get_texture_rect(player2_texture1);
                                 player2[countOfbots] = {playerTwoDirection,standard_resp[lastTypeOfbots]};
-                                //player2[countOfbots].changePosition();
                             }
                             else if (lastTypeOfbots == 1) {
                                 two_rect[countOfbots] = get_texture_rect(player2_texture1);
                                 player2[countOfbots] = {playerTwoDirection,standard_resp[lastTypeOfbots]};
-                                //player2[countOfbots].changePosition();
-
                             }
                             else if (lastTypeOfbots == 0) {
                                 two_rect[countOfbots] = get_texture_rect(player2_texture1);
                                 player2[countOfbots] = {playerTwoDirection,standard_resp[lastTypeOfbots]};
-                                //player2[countOfbots].changePosition();
                             }
                             lastTypeOfbots++;
                             if(lastTypeOfbots==3)
@@ -217,7 +175,7 @@ void play_the_game(SDL_Renderer *renderer) {
 
 
 
-        player.acceleration = acceleration_vector_from_keyboard_and_player(player);
+        player.acceleration = physics.acceleration_vector_from_keyboard_and_player(player);
         player = player.next_state(TICK_TIME);
         player = player.changePosition();
 
@@ -241,7 +199,7 @@ void play_the_game(SDL_Renderer *renderer) {
         //changing position of Player 2
         for(int i=0;i<countOfbots;i++)
         {
-            player2[i].acceleration = acceleration_vector_from_keyboard_and_player2(player2[i]);
+            player2[i].acceleration = physics.acceleration_vector_from_keyboard_and_player2(player2[i]);
             player2[i]=player2[i].next_state(TICK_TIME);
             player2[i]=player2[i].changePosition();
 

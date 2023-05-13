@@ -5,7 +5,7 @@
 #ifndef SGD_PROJEKT_PLAYER_C_H
 #define SGD_PROJEKT_PLAYER_C_H
 
-#include "vec2d.h"
+#include "../engine/vec2d.h"
 
 class player_c
 {

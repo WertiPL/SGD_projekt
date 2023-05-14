@@ -72,7 +72,6 @@ bool checkIfWin(player_c &player,playerTwo_C *player2,int players2num)
 void play_the_game(SDL_Renderer *renderer) {
     auto street_texture = load_texture(renderer, "street.bmp");
     auto player_texture = load_texture(renderer, "car.bmp");
-
     SDL_Rect player_rect = get_texture_rect(player_texture);
     SDL_Rect street_rect = get_texture_rect(street_texture);
     auto player2_texture1 = load_texture(renderer, "bot.bmp");
@@ -128,8 +127,6 @@ void play_the_game(SDL_Renderer *renderer) {
                             {
                                 lastTypeOfbots=0;
                             }
-
-
                             countOfbots++;
                             if(countOfbots==limitOfbots)
                             {

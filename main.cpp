@@ -72,9 +72,18 @@ bool checkIfWin(player_c &player,playerTwo_C *player2,int players2num)
 void play_the_game(SDL_Renderer *renderer) {
     auto street_texture = load_texture(renderer, "street.bmp");
     auto player_texture = load_texture(renderer, "car.bmp");
+    auto player_texture_win1 = load_texture(renderer, "win1.bmp");
+    auto player_texture_win2 = load_texture(renderer, "win2.bmp");
 
     SDL_Rect player_rect = get_texture_rect(player_texture);
     SDL_Rect street_rect = get_texture_rect(street_texture);
+    SDL_Rect win1 = get_texture_rect(player_texture_win1);
+    SDL_Rect win2 = get_texture_rect(player_texture_win2);
+    win1.x=0;
+    win1.y=0;
+    win2.x=0;
+    win2.y=0;
+
     auto player2_texture1 = load_texture(renderer, "bot.bmp");
 
     int limitOfbots=4;
@@ -128,8 +137,6 @@ void play_the_game(SDL_Renderer *renderer) {
                             {
                                 lastTypeOfbots=0;
                             }
-
-
                             countOfbots++;
                             if(countOfbots==limitOfbots)
                             {
@@ -165,7 +172,6 @@ void play_the_game(SDL_Renderer *renderer) {
                                 }
                             }
                             std::cout<<"Limit number of Bots achieved"<<std::endl;
-
                         }
                     }
                     break;
@@ -182,18 +188,10 @@ void play_the_game(SDL_Renderer *renderer) {
 
         {
             auto rect = player_rect;
-
-
             rect.x = player.position[0] - rect.w / 2;
             rect.y = player.position[1] - rect.h / 2;
-
             SDL_RenderCopy(renderer, street_texture.get(), nullptr, nullptr);
-
-            SDL_RenderCopyEx(renderer, player_texture.get(),
-                             nullptr, &rect,  player.angle,
-                             nullptr, SDL_FLIP_NONE);
-
-
+            SDL_RenderCopyEx(renderer, player_texture.get(),nullptr, &rect,  player.angle,nullptr, SDL_FLIP_NONE);
         }
 
         //changing position of Player 2
@@ -204,6 +202,7 @@ void play_the_game(SDL_Renderer *renderer) {
             player2[i]=player2[i].changePosition();
 
         }
+        bool winGame = false;
 
         //rendering position of Player 2
         {
@@ -218,6 +217,7 @@ void play_the_game(SDL_Renderer *renderer) {
                 copyTwo_rect[i].y = player2[i].position[1] - copyTwo_rect[i].h / 3;
                 if(!player2[i].checkState())
                 {
+
                     SDL_RenderCopyEx(renderer, player2_texture1.get(),
                                      nullptr, &copyTwo_rect[i], player2[i].angle,
                                      nullptr, SDL_FLIP_NONE);
@@ -231,12 +231,23 @@ void play_the_game(SDL_Renderer *renderer) {
             if(checkIfWin(player,player2,countOfbots))
             {
                 std::cout<<"Player2 Win"<<std::endl;
+                winGame = true;
+                    if(winGame == true)
+                    {
+                        SDL_RenderCopy(renderer,player_texture_win2.get(), nullptr, &win2);
+
+                    }
             }
             else
             {
                 if(time > win)
                 {
                     std::cout<<"Player1 Win"<<std::endl;
+                    winGame = true;
+                    if(winGame == true)
+                    {
+                        SDL_RenderCopy(renderer,player_texture_win1.get(), nullptr, &win1);
+                    }
                 }
                 else
                 {
@@ -244,11 +255,17 @@ void play_the_game(SDL_Renderer *renderer) {
                 }
             }
         }
-
         SDL_RenderPresent(renderer);
         int current_tick = SDL_GetTicks();
         SDL_Delay(TICK_TIME - (current_tick - prev_tick));
         prev_tick += TICK_TIME;
+
+        if(winGame == true)
+        {
+            SDL_Delay(1000);
+            gaming = false;
+            return;
+        }
     }
 }
 

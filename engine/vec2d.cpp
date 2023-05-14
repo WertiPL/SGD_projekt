@@ -1,5 +1,5 @@
 //
-// Created by wikto on 7/05/2023.
+// Created by https://github.com/pantadeusz on 7/05/2023.
 //
 
 #include "vec2d.h"

@@ -27,7 +27,6 @@ player_c player_c::next_state(double dt_ms) {
         {
             next.position[1]=400;
         }
-        //next.changePosition();
         next.velocity = velocity + a * dt;
         next.acceleration = a;
         return next;
